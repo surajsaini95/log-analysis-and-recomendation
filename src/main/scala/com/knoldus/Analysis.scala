@@ -38,17 +38,6 @@ class Analysis extends Actor {
   }
 }
 
-trait Utils {
-  def getListOfFiles(inputDirectory: String): List[File] = {
-    val d = new File(inputDirectory)
-    if (d.exists && d.isDirectory) {
-      d.listFiles.toList
-    } else {
-      List[File]()
-    }
-  }
-}
-
 case class FileAnalysisResult(name: String, errorCount: Int, warningCount: Int, infoCount: Int)
 
 object AnalysisOb extends App with Utils {

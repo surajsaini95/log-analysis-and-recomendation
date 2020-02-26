@@ -1,19 +1,22 @@
 package com.knoldus
 
 import java.io.File
+
 import scala.concurrent.ExecutionContext.Implicits.global
-import akka.actor.{Actor, ActorSystem, Props}
+import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import akka.util.Timeout
 import akka.pattern.ask
 import akka.routing.RoundRobinPool
+
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.io.Source
 
-class AnalysisPartThree extends Actor {
+class AnalysisPartThree extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case file: File => sender ! analyseFile(file)
+    case file: File =>    log.info(self.path.toString)
+                        sender ! analyseFile(file)
   }
 
   def analyseFile(file: File): FileAnalysisResult = {
@@ -46,13 +49,13 @@ object AnalysisPartThreeOb extends App with Utils {
 
   val list = getListOfFiles("src/main/resources/log-files")
 
-  val actor = system.actorOf(RoundRobinPool(3).props(Props[AnalysisPartThree]).withDispatcher("fixed-thread-pool"), "myactor")
-
+  val actor= system.actorOf(RoundRobinPool(3).props(Props[AnalysisPartThree]).withDispatcher("fixed-thread-pool"), "myactor")
 
   val res = list.map(file => {
 
     (actor ? file).mapTo[FileAnalysisResult].recover {
-      case exception: Exception => FileAnalysisResult(file.getName, -1, -1, -1)
+      case exception: Exception => println(exception.getMessage)
+        FileAnalysisResult(file.getName, -1, -1, -1)
     }
   })
 
